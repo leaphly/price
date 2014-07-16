@@ -1,0 +1,21 @@
+{
+    "name": "leaphly/price",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "liuggio",
+            "email": "liuggio@gmail.com"
+        }
+    ],
+    "require": {
+        "mathiasverraes/money": "dev-master",
+        "doctrine/common": "~2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4"
+    },
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "autoload": {"psr-4": {"Leaphly\\Price\\": "src"}}
+}
