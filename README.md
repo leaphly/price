@@ -1,106 +1,122 @@
 Price
 =====
 
-## Unstable version things will change do not use and help :)
-
 [![Build Status](https://secure.travis-ci.org/leaphly/price.png?branch=master)](http://travis-ci.org/leaphly/price)
 [![Total Downloads](https://poser.pugx.org/leaphly/price/downloads.png)](https://packagist.org/packages/leaphly/price)
 [![Latest Stable Version](https://poser.pugx.org/leaphly/price/v/stable.png)](https://packagist.org/packages/leaphly/price)
 
-#### Usually a product has a price in different currencies.
-#### Price is a set of money in a given currency.
-#### A PriceList is a set of Price in a given context *still missing feature*
+### A Price is the amount of a product in different currencies.
+
+```
+The t-shirt costs 3€
+if the customer wants to pay with US Dollar the price is fixed to 4$,
+if the customer wants to pay with British Pound the amount is given by the conversion.
+```
+
+in PHP is:
+
+```php
+$tShirtPrice = new Price(
+  [
+    'EUR' => 300,
+    'USD' => 400
+  ],
+  ['EUR/GBP 0.7900'] // array of conversions
+);
+
+echo $tShirtPrice->getEUR();          // 300
+echo $tShirtPrice->getAmount('EUR');  // 300
+echo $tShirtPrice->getAmount('USD');  // 400
+echo $tShirtPrice->getAmount('GBP');  // 237
+```
+
+### Goodies:
+
+- It helps you work with money.
+- It helps you to work with currencies.
+- It helps you work with multiple currencies, converted or explicit.
+- It is shipped with some math operations like `addition`, `multiplication`, `division`, `subtraction` ...
+- This library uses the [mathiasverraes/money](https://packagist.org/packages/mathiasverraes/money).
 
 
-### Price usage
+### Simple usage
 
 * The T-Shirt costs 10€ or 8£
 
-*Constructor*
+#### Constructor
+
+Usage with explicit currency values.
 
 ```php
 $ticketPrice = new Price(
   [
-    'EUR' => 10,
-    'USD' => 11,
-    'GBP' => 12,
+    'EUR' => 1000,
+    'GBP' => 800
   ]
 );
 
-// or
+echo $tShirtPrice->getEUR();  // return 1000
 
-$ticketPrice = new Price();
-
-$ticketPrice->setEUR(1000);
-$ticketPrice->setGBP(800);
-$ticketPrice->setCHF(800);
+var_dump($ticketPrice->availableCurrencies()); // array with EUR, GBP
 ```
 
-*Usage with explicit currency value*
+#### Usage with mixed explicit and converted values
 
 ```php
 $ticketPrice = new Price(
   [
-    'EUR' => 10,
-    'USD' => 11,
-    'GBP' => 12,
-  ]
-);
-
-echo $ticketPrice->getAmount('EUR'); // 10
-echo $ticketPrice->getAmount('USD'); // 11
-```
-
-*Usage with conversion ratio, the value of another currency is calculated*
-
-```php
-$ticketPrice = new Price(
-  ['EUR' => 100],    // array of money
-  ['EUR/USD 1.2500'] // array of conversions
+    'EUR' => 100,
+    'USD' => 130
+  ],
+  ['EUR/GBP 0.7901'] // this is an array of conversions
 );
 
 echo $ticketPrice->getAmount('EUR'); // 100
-echo $ticketPrice->getAmount('USD'); // 125
+echo $ticketPrice->getAmount('GBP'); // 79 is calculated
+
+var_dump($ticketPrice->availableCurrencies()); // array with EUR, USD, GBP
 ```
 
-
-### Price language
+### Do we use the same language?
 
 * An espresso coffee costs [2€ or 2.3$] here and [1€ or 1.2$] take away.
 
 `espresso` is a product.
 
-`here` and `take away` are Contexts.
+`here` and `take away` are contexts (*still is a missing feature*).
 
 `2€` `2.3£` is a Price with 2 currencies,
 
 `1€` `1.2£` is a Price with 2 currencies,
 
-`2€ or 2.3$ here, and 1€ or 1.2$ for take away.` is a PriceList.
+`2€ or 2.3$ here, and 1€ or 1.2$ for take away.` is a PriceList (*still is a missing feature*).
 
-There's a working example here [ExampleTest.php](./tests/Price/ExampleTest.php)
 
-API
----
+API (still not stable)
+----------------------
 
 ### Price
 
 ```php
+    public function set($currency, $value);
 
-    public function equals(Price);
+    public function getXYZ($currency); // XYZ is a currency like EUR
 
-    public function set($currency, $value)
+    public function getAmount($currency);
 
-    public function add(Price $addend)
+    public function hasAmount($currency);
 
-    public function subtract(Price $subtrahend)
+    public function availableCurrencies();
 
-    public function multiply($multiplier, $rounding_mode = Money::ROUND_HALF_UP)
+    public function equals(Price $other);
 
-    public function divide($divisor, $rounding_mode = Money::ROUND_HALF_UP)
+    public function subtract(Price $subtrahend);
+
+    public function multiply($multiplier);
+
+    public function divide($divisor);
 ```
 
-This library uses the mathiasverraes/money.
 
 License [![License](https://poser.pugx.org/leaphly/price/license.png)](https://packagist.org/packages/leaphly/price)
 -------
@@ -113,7 +129,7 @@ Test
 ----
 
 ``` bash
-composer.phar create-project leaphly/price ~1`
+composer.phar create-project leaphly/price dev-master`
 bin/phpunit
 ```
 

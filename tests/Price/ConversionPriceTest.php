@@ -10,12 +10,12 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
     public function testConstructor()
     {
         $price = new Price(
-            [
+            array(
                 'EUR' => 5,
                 'USD' => 10,
                 'GBP' => 15,
-            ],
-            ['USD/CHF 1.500']
+            ),
+            array('USD/CHF 1.500')
         );
 
         $this->assertInstanceOf(
@@ -31,12 +31,12 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
     public function testShouldAlsoHaveCHFInTheAvailableCurrencies()
     {
         $price = new Price(
-            [
+            array(
                 'EUR' => 5,
                 'USD' => 10,
                 'GBP' => 15,
-            ],
-            ['USD/CHF 1.500']
+            ),
+            array('USD/CHF 1.500')
         );
 
         $this->assertEquals('EUR-USD-GBP-CHF',
@@ -47,12 +47,12 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
     public function testConversionRecursive()
     {
         $price = new Price(
-            [
+            array(
                 'EUR' => 1
-            ],
-            [   'EUR/USD 2',
+            ),
+            array(   'EUR/USD 2',
                 'USD/CHF 2'
-            ]
+            )
 
         );
 

@@ -9,11 +9,11 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
     public function testConstructor()
     {
         $price = new Price(
-            [
+            array(
                 'EUR' => 10,
                 'USD' => 120,
                 'GBP' => 12,
-            ]
+            )
         );
 
         $this->assertInstanceOf(

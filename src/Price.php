@@ -9,27 +9,31 @@ use Money\Currency;
 
 class Price implements \Iterator
 {
-    const UNION     = 1; // add all values on both sets.
-    const INTERSECT = 1; // add only the values that are on both sets.
-
     private $money;
     private $conversions;
 
     public function __construct(array $money = null, array $conversions = null)
     {
-        // validate input, 2 input or error.
+        if ((null == $money || count($money) <= 0) && null != $conversions) {
+            throw new \InvalidArgumentException('Conversion should be null if no money are given.');
+        }
+
         $this->money = array();
         $this->conversions = array();
 
         if (null !== $money) {
             $this->fromArray($money);
         }
+
         if (null !== $conversions) {
             $this->addConversions($conversions);
         }
     }
 
     /**
+     * Add a Conversion Pair into the Price
+     *  eg. 'EUR/USD 1.2500'
+     *
      * @param string|CurrencyPair $conversion
      *
      * @throws \Exception
@@ -42,18 +46,32 @@ class Price implements \Iterator
 
         // assert the BaseCurrency exists or is calculable
         if (!$this->hasAmount($conversion->getBaseCurrency())
-            && !isset($this->conversions[(string) $conversion->getBaseCurrency()])
-        )
-        {
-            throw new \Exception(sprintf('Impossible to find %s, in the array of possible conversion,
-             be careful the order is important.', $conversion->getBaseCurrency()));
+            && !$this->hasConversion($conversion->getBaseCurrency())
+        ) {
+            throw new \Exception(sprintf(
+                'Impossible to find %s, in the array of possible conversion,
+                             be careful the order is important.',
+                $conversion->getBaseCurrency()
+            ));
         }
 
         $this->conversions
-            [(string) $conversion->getCounterCurrency()]
-            [(string) $conversion->getBaseCurrency()] = $conversion;
+        [(string)$conversion->getCounterCurrency()]
+        [(string)$conversion->getBaseCurrency()] = $conversion;
     }
 
+    /**
+     * Magic call that helps adding money or retrieving amount
+     *  eg. setEUR(10)
+     *      getEUR(10)
+     *
+     * @param $method
+     * @param $args
+     *
+     * @return $this
+     *
+     * @throws \Money\InvalidArgumentException
+     */
     public function __call($method, $args)
     {
         $currency = str_replace('set', '', $method, $count);
@@ -62,46 +80,74 @@ class Price implements \Iterator
             return $this->set($currency, $args[0]);
         }
 
+        $count = 0;
+        $currency = str_replace('get', '', $method, $count);
+
+        if ($count > 0) {
+            return $this->getAmount($currency, $args[0]);
+        }
+
+
         throw new InvalidArgumentException();
     }
 
     /**
-     * set a money in the given Amount
+     * Set a money in the given currency and amount
      *
-     * @param string $currency eg 'EUR'
-     * @param int    $value    eg. 100
+     * @param string|Currency $currency eg 'EUR'
+     * @param int             $value eg. 100
      *
      * @return $this
      */
     public function set($currency, $value)
     {
-       $currency = (string) $currency;
-       $this->money[$currency] = new Money($value, new Currency($currency));
+        $currency = (string)$currency;
+        $this->money[$currency] = new Money($value, new Currency($currency));
 
-       return $this;
+        return $this;
     }
 
+    /**
+     * Return the int amount for a currency, if exists.
+     *
+     * @param string|Currency $currency
+     *
+     * @return int
+     */
     public function getAmount($currency)
     {
         return $this->getMoney($currency)->getAmount();
     }
 
+    /**
+     * True if this price has an amount for that currency.
+     *
+     * @param string|Currency $currency
+     * @return bool
+     */
     public function hasAmount($currency)
     {
-        $currency = (string) $currency;
+        $currency = (string)$currency;
 
-        return isset($this->money[$currency]);
+        return ($this->doGetMoney($currency));
     }
 
+    /**
+     * Get the Money object for a Given Currency,
+     *  if it doesnt' find the currency it tries to convert using conversions.
+     *
+     * @param $currency
+     * @return null
+     */
     public function getMoney($currency)
     {
-        $currency = (string) $currency;
+        $currency = (string)$currency;
 
         if (!$this->hasAmount($currency)) {
             return $this->calculateConversion($currency);
         }
 
-        return $this->money[$currency];
+        return $this->doGetMoney($currency);
     }
 
     /**
@@ -115,7 +161,7 @@ class Price implements \Iterator
     }
 
     /**
-     * Add another price to the actual, the result is the intersection.
+     * Add another price to the actual, the result is the intersection, the conversions are not modified.
      *
      * @param Price $addend
      *
@@ -126,6 +172,13 @@ class Price implements \Iterator
         return $this->executeMoneyFunctionOnPrice($addend, __FUNCTION__);
     }
 
+    /**
+     * Return true if the this prices has the same amounts, conversions are not compared.
+     *
+     * @param Price $other
+     *
+     * @return bool
+     */
     public function equals(Price $other)
     {
         if ($other->toArray() != $this->toArray()) {
@@ -137,7 +190,7 @@ class Price implements \Iterator
 
     /**
      * Subtract another price to the actual, works only for the same currencies,
-     * the result is the intersection of currencies.
+     * the result is the intersection of currencies, the conversions are not modified.
      *
      * @param Price $subtrahend
      *
@@ -150,7 +203,7 @@ class Price implements \Iterator
 
     /**
      * multiply another price to the actual, works only for the same currencies,
-     * the result is the intersection of currencies.
+     * the result is the intersection of currencies, the conversions are not modified.
      *
      * @param int|float $multiplier
      *
@@ -163,7 +216,7 @@ class Price implements \Iterator
 
     /**
      * divide another price to the actual, works only for the same currencies,
-     * the result is the intersection of currencies.
+     * the result is the intersection of currencies, the conversions are not modified.
      *
      * @param int|float $divisor
      *
@@ -174,10 +227,26 @@ class Price implements \Iterator
         return $this->executeMoneyFunction($divisor, __FUNCTION__);
     }
 
+    private function doGetMoney($currency)
+    {
+        $currency = (string)$currency;
+
+        if (!isset($this->money[$currency])) {
+            return null;
+        }
+
+        return $this->money[$currency];
+    }
+
+    private function hasConversion($currency)
+    {
+        return isset($this->conversions[(string)$currency]);
+    }
+
     private function calculateConversion($currency)
     {
         // I need the amount for this currency.
-        $conversion = reset($this->conversions[(string) $currency]);
+        $conversion = reset($this->conversions[(string)$currency]);
 
         $moneyBase = $this->getMoney($conversion->getBaseCurrency());
 
@@ -202,7 +271,7 @@ class Price implements \Iterator
 
     private function executeMoneyFunction($divOrMult, $amountFunction)
     {
-        $newPrice =  new Price();
+        $newPrice = new Price();
         $array = $this->toArray();
 
         foreach ($array as $currency => $money) {
@@ -215,7 +284,7 @@ class Price implements \Iterator
 
     private function executeMoneyFunctionOnPrice(Price $other, $amountFunction)
     {
-        $newPrice =  new Price();
+        $newPrice = new Price();
         $array = $this->toArray();
 
         foreach ($array as $currency => $money) {
@@ -240,21 +309,24 @@ class Price implements \Iterator
     {
         return reset($this->money);
     }
+
     public function current()
     {
         return current($this->money);
     }
+
     public function key()
     {
         return key($this->money);
     }
+
     public function next()
     {
         return next($this->money);
     }
+
     public function valid()
     {
         return key($this->money) !== null;
     }
-
 }
