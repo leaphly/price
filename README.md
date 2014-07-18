@@ -8,9 +8,9 @@ Price
 ### A Price is the amount of a product in different currencies.
 
 ```
-The t-shirt costs 3€
-if the customer wants to pay with US Dollar the price is fixed to 4$,
-if the customer wants to pay with British Pound the amount is given by the conversion.
+In Dollar a t-shirt     costs 4$,
+in Eur the same t-shirt costs 3€
+if British Pound the cost is given by the current conversion of 0.7900
 ```
 
 in PHP is:
@@ -24,20 +24,25 @@ $tShirtPrice = new Price(
   ['EUR/GBP 0.7900'] // array of conversions
 );
 
-echo $tShirtPrice->getEUR();          // 300
-echo $tShirtPrice->getAmount('EUR');  // 300
-echo $tShirtPrice->getAmount('USD');  // 400
-echo $tShirtPrice->getAmount('GBP');  // 237
+echo $tShirtPrice->getEUR(); // 300  same as ->getAmount('EUR')
+echo $tShirtPrice->getUSD(); // 400  same as ->getAmount('USD')
+echo $tShirtPrice->getGBP(); // 237  same as ->getAmount('GBP')
 ```
+
+### Why!!
+
+- Because is not recommended to work with the float for the money in PHP..
+- Because is better to implement money as value objects.
+- Because in the e-commerce domain a product has always* a different price for different currencies.
+- Because we needed :).
 
 ### Goodies:
 
-- It helps you work with money.
+- It helps you to work with money.
 - It helps you to work with currencies.
-- It helps you work with multiple currencies, converted or explicit.
-- It is shipped with some math operations like `addition`, `multiplication`, `division`, `subtraction` ...
-- This library uses the [mathiasverraes/money](https://packagist.org/packages/mathiasverraes/money).
-
+- It helps you to work with multiple currencies, converted or explicit.
+- It is shipped with some math operations: `addition`, `multiplication`, `division`, `subtraction` ...
+- This library extends the [mathiasverraes/money](https://packagist.org/packages/mathiasverraes/money).
 
 ### Simple usage
 
@@ -100,7 +105,7 @@ API (still not stable)
 ```php
     public function set($currency, $value);
 
-    public function getXYZ($currency); // XYZ is a currency like EUR
+    public function getABC($currency); // ABC is a currency like EUR
 
     public function getAmount($currency);
 
@@ -110,6 +115,8 @@ API (still not stable)
 
     public function equals(Price $other);
 
+    public function add(Price $addend);
+
     public function subtract(Price $subtrahend);
 
     public function multiply($multiplier);
@@ -117,6 +124,34 @@ API (still not stable)
     public function divide($divisor);
 ```
 
+#### Example sum two prices
+
+
+```php
+$ticketPrice = new Price(
+  [
+    'EUR' => 100,
+    'USD' => 130
+  ],
+  ['EUR/GBP 0.7901'] // this is an array of conversions
+);
+
+$shirtPrice = new Price(
+  [
+    'EUR' => 200,
+    'CHF' => 300,
+    'GBP' => 400
+  ],
+);
+
+// sum
+$sumPrice = $ticketPrice->add($shirtPrice);
+
+$sumPrice->getEUR(); // 100+200= 400
+$sumPrice->getGBP(); //  79+400= 479
+$sumPrice->getUSD(); //          130
+$sumPrice->getCHF(); //          300
+```
 
 License [![License](https://poser.pugx.org/leaphly/price/license.png)](https://packagist.org/packages/leaphly/price)
 -------

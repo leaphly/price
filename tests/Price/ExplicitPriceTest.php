@@ -38,7 +38,7 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testAddEur()
+    public function testSetEur()
     {
         $price = new Price();
         $price->set('EUR', 20);
@@ -83,6 +83,79 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue(
             $price1->equals($price2)
+        );
+    }
+
+    public function testAddDisjoined()
+    {
+        $price1 = new Price();
+        $price1->set('USD', 10);
+        $price1->set('EUR', 20);
+        $price1->set('GBP', 30);
+
+        $price2 = new Price();
+        $price2->set('USD', 1);
+        $price2->set('EUR', 2);
+        $price2->set('CHF', 3);
+
+        $price1 = $price1->subtract($price2);
+
+        $this->assertEquals(
+            18,
+            $price1->getAmount('EUR')
+        );
+
+        $this->assertEquals(
+            9,
+            $price1->getAmount('USD')
+        );
+
+        $this->assertEquals(
+            -3,
+            $price1->getAmount('CHF')
+        );
+
+
+        $this->assertEquals(
+            30,
+            $price1->getAmount('GBP')
+        );
+    }
+
+
+    public function testAdd()
+    {
+        $price1 = new Price();
+        $price1->set('USD', 10);
+        $price1->set('EUR', 20);
+        $price1->set('GBP', 30);
+
+        $price2 = new Price();
+        $price2->set('USD', 1);
+        $price2->set('EUR', 2);
+        $price2->set('CHF', 3);
+
+        $price1 = $price1->add($price2);
+
+        $this->assertEquals(
+            22,
+            $price1->getAmount('EUR')
+        );
+
+        $this->assertEquals(
+            11,
+            $price1->getAmount('USD')
+        );
+
+        $this->assertEquals(
+            3,
+            $price1->getAmount('CHF')
+        );
+
+
+        $this->assertEquals(
+            30,
+            $price1->getAmount('GBP')
         );
     }
 
@@ -148,4 +221,5 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             $price1->multiply(2)->getAmount('EUR')
         );
     }
+
 }

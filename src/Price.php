@@ -60,6 +60,20 @@ class Price implements \Iterator
         [(string)$conversion->getBaseCurrency()] = $conversion;
     }
 
+    public function getConversions()
+    {
+        $array = array();
+        foreach ($this->conversions as $currency => $conversions)
+        {
+            foreach ($conversions as $currency => $conversion)
+            {
+                $array[] = $conversion;
+            }
+        }
+
+        return $array;
+    }
+
     /**
      * Magic call that helps adding money or retrieving amount
      *  eg. setEUR(10)
@@ -143,7 +157,8 @@ class Price implements \Iterator
     {
         $currency = (string)$currency;
 
-        if (!$this->hasAmount($currency)) {
+        if (!$this->hasAmount($currency)
+            && $this->hasConversion($currency)) {
             return $this->calculateConversion($currency);
         }
 
@@ -285,14 +300,24 @@ class Price implements \Iterator
     private function executeMoneyFunctionOnPrice(Price $other, $amountFunction)
     {
         $newPrice = new Price();
-        $array = $this->toArray();
+        $currencies = array_merge($this->availableCurrencies(), $other->availableCurrencies());
 
-        foreach ($array as $currency => $money) {
-            if ($other->hasAmount($currency)) {
-                $result = $money->{$amountFunction}($other->getMoney($currency));
-                $newPrice->set($result->getCurrency(), $result->getAmount());
+        foreach ($currencies as $currency) {
+            $moneyA = new Money(0, new Currency($currency));
+            $moneyB = new Money(0, new Currency($currency));
+
+            if ($this->hasAmount($currency)) {
+                $moneyA = $this->getMoney($currency);
             }
+            if ($other->hasAmount($currency)) {
+                $moneyB = $other->getMoney($currency);
+            }
+
+            $result = $moneyA->{$amountFunction}($moneyB);
+            $newPrice->set($result->getCurrency(), $result->getAmount());
         }
+        $newPrice->addConversions($this->getConversions());
+        $newPrice->addConversions($other->getConversions());
 
         return $newPrice;
     }
