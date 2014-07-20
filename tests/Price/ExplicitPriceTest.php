@@ -27,7 +27,7 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testMagicCall()
+    public function testMagicCallSetAndGet()
     {
         $price = new Price();
         $price->setEUR(20);
@@ -36,7 +36,11 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             'Leaphly\Price\Price',
             $price
         );
+
+        $this->assertEquals($price->getAmount('EUR'), $price->getEUR(20));
     }
+
+
 
     public function testSetEur()
     {

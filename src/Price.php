@@ -98,7 +98,7 @@ class Price implements \Iterator
         $currency = str_replace('get', '', $method, $count);
 
         if ($count > 0) {
-            return $this->getAmount($currency, $args[0]);
+            return $this->getAmount($currency);
         }
 
 
