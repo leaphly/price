@@ -77,7 +77,8 @@ class Price implements \Iterator
     /**
      * Magic call that helps adding money or retrieving amount
      *  eg. setEUR(10)
-     *      getEUR(10)
+     *      inEUR()
+     *      getEUR() @deprecated
      *
      * @param $method
      * @param $args
@@ -95,7 +96,7 @@ class Price implements \Iterator
         }
 
         $count = 0;
-        $currency = str_replace('get', '', $method, $count);
+        $currency = str_replace(array('get', 'in'), '', $method, $count);
 
         if ($count > 0) {
             return $this->getAmount($currency);

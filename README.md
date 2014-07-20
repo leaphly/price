@@ -24,9 +24,9 @@ $tShirtPrice = new Price(
   ['EUR/GBP 0.7900'] // array of conversions
 );
 
-echo $tShirtPrice->getEUR(); // 300  same as ->getAmount('EUR')
-echo $tShirtPrice->getUSD(); // 400  same as ->getAmount('USD')
-echo $tShirtPrice->getGBP(); // 237  same as ->getAmount('GBP')
+echo $tShirtPrice->inEUR(); // 300  same as ->getAmount('EUR')
+echo $tShirtPrice->inUSD(); // 400  same as ->getAmount('USD')
+echo $tShirtPrice->inGBP(); // 237  same as ->getAmount('GBP')
 ```
 
 ### Why!!
@@ -60,7 +60,7 @@ $ticketPrice = new Price(
   ]
 );
 
-echo $tShirtPrice->getEUR();  // return 1000
+echo $tShirtPrice->inEUR();  // return 1000
 
 var_dump($ticketPrice->availableCurrencies()); // array with EUR, GBP
 ```
@@ -76,8 +76,8 @@ $ticketPrice = new Price(
   ['EUR/GBP 0.7901'] // this is an array of conversions
 );
 
-echo $ticketPrice->getAmount('EUR'); // 100
-echo $ticketPrice->getAmount('GBP'); // 79 is calculated
+echo $ticketPrice->inEUR(); // 100
+echo $ticketPrice->inGBP(); // 79 is calculated
 
 var_dump($ticketPrice->availableCurrencies()); // array with EUR, USD, GBP
 ```
@@ -105,7 +105,7 @@ API (still not stable)
 ```php
     public function set($currency, $value);
 
-    public function getABC($currency); // ABC is a currency like EUR
+    public function inXYZ($currency); // ZYX is a valid currency like EUR or GBP
 
     public function getAmount($currency);
 
@@ -122,6 +122,8 @@ API (still not stable)
     public function multiply($multiplier);
 
     public function divide($divisor);
+
+    public function isZero();
 ```
 
 #### Example sum two prices
@@ -147,10 +149,10 @@ $shirtPrice = new Price(
 // sum
 $sumPrice = $ticketPrice->add($shirtPrice);
 
-$sumPrice->getEUR(); // 100+200= 400
-$sumPrice->getGBP(); //  79+400= 479
-$sumPrice->getUSD(); //          130
-$sumPrice->getCHF(); //          300
+$sumPrice->inEUR(); // 100+200= 400
+$sumPrice->inGBP(); //  79+400= 479
+$sumPrice->inUSD(); //          130
+$sumPrice->inCHF(); //          300
 ```
 
 License [![License](https://poser.pugx.org/leaphly/price/license.png)](https://packagist.org/packages/leaphly/price)

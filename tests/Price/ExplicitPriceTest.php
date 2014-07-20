@@ -56,7 +56,7 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             $price
         );
 
-        $this->assertEquals($price->getAmount('EUR'), $price->getEUR(20));
+        $this->assertEquals($price->getAmount('EUR'), $price->inEUR(20));
     }
 
 
