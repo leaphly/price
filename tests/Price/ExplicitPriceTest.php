@@ -26,6 +26,25 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testIsZeroOnEmptyPrice()
+    {
+        $price = new Price();
+
+        $this->assertTrue($price->isZero());
+    }
+
+    public function testIsZeroOnMultipleZeroCurrencies()
+    {
+        $price = new Price(
+            array(
+                'EUR' => 0,
+                'USD' => 0,
+                'GBP' => 0,
+            )
+        );
+
+        $this->assertTrue($price->isZero());
+    }
 
     public function testMagicCallSetAndGet()
     {

@@ -101,8 +101,25 @@ class Price implements \Iterator
             return $this->getAmount($currency);
         }
 
-
         throw new InvalidArgumentException();
+    }
+
+    /**
+     * Is 0 if all the currencies has not a positive or negative number.
+     *
+     * @return bool
+     */
+    public function isZero()
+    {
+        $array = $this->toArray();
+
+        foreach ($array as $currency => $money) {
+            if (!$money->isZero()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
