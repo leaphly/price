@@ -9,17 +9,17 @@ use Money\Currency;
 
 class Price implements \Iterator
 {
-    private $money;
-    private $conversions;
+    private $money       = array();
+    private $conversions = array();
 
+    /**
+     * Construct a Price from money and conversions
+     */
     public function __construct(array $money = null, array $conversions = null)
     {
         if ((null == $money || count($money) <= 0) && null != $conversions) {
             throw new \InvalidArgumentException('Conversion should be null if no money are given.');
         }
-
-        $this->money = array();
-        $this->conversions = array();
 
         if (null !== $money) {
             $this->fromArray($money);
@@ -60,18 +60,21 @@ class Price implements \Iterator
         [(string)$conversion->getBaseCurrency()] = $conversion;
     }
 
+    /**
+     * Get all conversions.
+     * 
+     * @return CurrencyPair[]
+     */
     public function getConversions()
     {
-        $array = array();
-        foreach ($this->conversions as $currency => $conversions)
-        {
-            foreach ($conversions as $currency => $conversion)
-            {
-                $array[] = $conversion;
-            }
-        }
 
-        return $array;
+        return array_reduce($this->conversions, function(&$conversions, $conversionsForCurrency){
+            
+            return array_merge(
+                $conversions,
+                array_values($conversionsForCurrency) 
+            );
+        }, array());
     }
 
     /**
@@ -89,20 +92,55 @@ class Price implements \Iterator
      */
     public function __call($method, $args)
     {
-        $currency = str_replace('set', '', $method, $count);
-
-        if ($count > 0) {
+        if (($currency = $this->isMagicSetter($method)) !== false) {
             return $this->set($currency, $args[0]);
         }
 
-        $count = 0;
-        $currency = str_replace(array('get', 'in'), '', $method, $count);
-
-        if ($count > 0) {
+        if (($currency = $this->isMagicGetter($method)) !== false 
+            || ($currency = $this->isMagicIn($method))  !== false) {
             return $this->getAmount($currency);
         }
 
         throw new InvalidArgumentException();
+    }
+
+    /**
+     * Detect the magic getter and returns the currency ISO string,
+     * returns false otherwise.
+     * 
+     * @return String|false
+     */
+    private function isMagicGetter($method)
+    {
+        $currencyToGet = str_replace('get', '', $method, $count);
+
+        return ($count > 0) ? $currencyToGet : false;
+    }
+
+    /**
+     * Detect the magic setter and returns the currency ISO string,
+     * returns false otherwise.
+     * 
+     * @return String|false
+     */
+    private function isMagicSetter($method)
+    {
+        $currencyToSet = str_replace('set', '', $method, $count);
+
+        return ($count > 0) ? $currencyToSet : false;
+    }
+
+    /**
+     * Detect the magic in and returns the currency ISO string,
+     * returns false otherwise.
+     * 
+     * @return String|false
+     */
+    private function isMagicIn($method)
+    {
+        $currencyToConvertIn = str_replace('in', '', $method, $count);
+
+        return ($count > 0) ? $currencyToConvertIn : false;
     }
 
     /**
