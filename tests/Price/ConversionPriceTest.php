@@ -44,13 +44,37 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testCurrencyPairsConversions()
+    {
+        $price = new Price(
+            array(
+                'EUR' => 5,
+                'USD' => 10,
+                'GBP' => 15,
+            ),
+            array(
+                'USD/CHF 1.500',
+                'EUR/GBP 1.200'
+            )
+        );
+
+        $conversions = $price->getConversions();
+
+        $this->assertCount(2, $conversions);
+        $this->assertInstanceOf('Money\CurrencyPair', $conversions[0]);
+        $this->assertEquals('USD', $conversions[0]->getBaseCurrency());
+        $this->assertEquals('CHF', $conversions[0]->getCounterCurrency());
+        $this->assertEquals(1.5,   $conversions[0]->getRatio());
+    }
+
     public function testConversionRecursive()
     {
         $price = new Price(
             array(
                 'EUR' => 1
             ),
-            array(   'EUR/USD 2',
+            array(   
+                'EUR/USD 2',
                 'USD/CHF 2'
             )
 
