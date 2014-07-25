@@ -2,8 +2,6 @@
 
 namespace Leaphly\Price;
 
-use Leaphly\Price\Price;
-
 class ConversionPriceTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -73,7 +71,7 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
             array(
                 'EUR' => 1
             ),
-            array(   
+            array(
                 'EUR/USD 2',
                 'USD/CHF 2'
             )

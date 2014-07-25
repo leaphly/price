@@ -2,8 +2,6 @@
 
 namespace Leaphly\Price;
 
-use Leaphly\Price\Price;
-
 class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructor()
@@ -59,8 +57,6 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($price->getAmount('EUR'), $price->inEUR(20));
     }
 
-
-
     public function testSetEur()
     {
         $price = new Price();
@@ -94,7 +90,6 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             $price1->add($price2)->getAmount('EUR')
         );
     }
-
 
     public function testEquals()
     {
@@ -138,13 +133,11 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             $price1->getAmount('CHF')
         );
 
-
         $this->assertEquals(
             30,
             $price1->getAmount('GBP')
         );
     }
-
 
     public function testAdd()
     {
@@ -174,7 +167,6 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             3,
             $price1->getAmount('CHF')
         );
-
 
         $this->assertEquals(
             30,
