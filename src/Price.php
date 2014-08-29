@@ -56,23 +56,22 @@ class Price implements \Iterator
         }
 
         $this->conversions
-        [(string)$conversion->getCounterCurrency()]
-        [(string)$conversion->getBaseCurrency()] = $conversion;
+        [(string) $conversion->getCounterCurrency()]
+        [(string) $conversion->getBaseCurrency()] = $conversion;
     }
 
     /**
      * Get all conversions.
-     * 
+     *
      * @return CurrencyPair[]
      */
     public function getConversions()
     {
+        return array_reduce($this->conversions, function (&$conversions, $conversionsForCurrency) {
 
-        return array_reduce($this->conversions, function(&$conversions, $conversionsForCurrency){
-            
             return array_merge(
                 $conversions,
-                array_values($conversionsForCurrency) 
+                array_values($conversionsForCurrency)
             );
         }, array());
     }
@@ -96,7 +95,7 @@ class Price implements \Iterator
             return $this->set($currency, $args[0]);
         }
 
-        if (($currency = $this->isMagicGetter($method)) !== false 
+        if (($currency = $this->isMagicGetter($method)) !== false
             || ($currency = $this->isMagicIn($method))  !== false) {
             return $this->getAmount($currency);
         }
@@ -107,7 +106,7 @@ class Price implements \Iterator
     /**
      * Detect the magic getter and returns the currency ISO string,
      * returns false otherwise.
-     * 
+     *
      * @return String|false
      */
     private function isMagicGetter($method)
@@ -120,7 +119,7 @@ class Price implements \Iterator
     /**
      * Detect the magic setter and returns the currency ISO string,
      * returns false otherwise.
-     * 
+     *
      * @return String|false
      */
     private function isMagicSetter($method)
@@ -133,7 +132,7 @@ class Price implements \Iterator
     /**
      * Detect the magic in and returns the currency ISO string,
      * returns false otherwise.
-     * 
+     *
      * @return String|false
      */
     private function isMagicIn($method)
@@ -165,13 +164,13 @@ class Price implements \Iterator
      * Set a money in the given currency and amount
      *
      * @param string|Currency $currency eg 'EUR'
-     * @param int             $value eg. 100
+     * @param int             $value    eg. 100
      *
      * @return $this
      */
     public function set($currency, $value)
     {
-        $currency = (string)$currency;
+        $currency = (string) $currency;
         $this->money[$currency] = new Money($value, new Currency($currency));
 
         return $this;
@@ -192,12 +191,12 @@ class Price implements \Iterator
     /**
      * True if this price has an amount for that currency.
      *
-     * @param string|Currency $currency
+     * @param  string|Currency $currency
      * @return bool
      */
     public function hasAmount($currency)
     {
-        $currency = (string)$currency;
+        $currency = (string) $currency;
 
         return ($this->doGetMoney($currency));
     }
@@ -211,7 +210,7 @@ class Price implements \Iterator
      */
     public function getMoney($currency)
     {
-        $currency = (string)$currency;
+        $currency = (string) $currency;
 
         if (!$this->hasAmount($currency)
             && $this->hasConversion($currency)) {
@@ -300,7 +299,7 @@ class Price implements \Iterator
 
     private function doGetMoney($currency)
     {
-        $currency = (string)$currency;
+        $currency = (string) $currency;
 
         if (!isset($this->money[$currency])) {
             return null;
@@ -311,13 +310,13 @@ class Price implements \Iterator
 
     private function hasConversion($currency)
     {
-        return isset($this->conversions[(string)$currency]);
+        return isset($this->conversions[(string) $currency]);
     }
 
     private function calculateConversion($currency)
     {
         // I need the amount for this currency.
-        $conversion = reset($this->conversions[(string)$currency]);
+        $conversion = reset($this->conversions[(string) $currency]);
 
         $moneyBase = $this->getMoney($conversion->getBaseCurrency());
 
