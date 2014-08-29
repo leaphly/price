@@ -6,7 +6,6 @@ use Leaphly\Price\Price;
 
 class ConversionPriceTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testConstructor()
     {
         $price = new Price(
@@ -77,7 +76,6 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
                 'EUR/USD 2',
                 'USD/CHF 2'
             )
-
         );
 
         $this->assertInstanceOf(

@@ -29,9 +29,9 @@ echo $tShirtPrice->inUSD(); // 400  same as ->getAmount('USD')
 echo $tShirtPrice->inGBP(); // 237  same as ->getAmount('GBP')
 ```
 
-### Why!!
+### Why?!
 
-- Because is not recommended to work with the float for the money in PHP..
+- Because is not recommended to work with the float for the money in PHP...
 - Because is better to implement money as value objects.
 - Because in the e-commerce domain a product has always* a different price for different currencies.
 - Because we needed :).
@@ -46,7 +46,7 @@ echo $tShirtPrice->inGBP(); // 237  same as ->getAmount('GBP')
 
 ### Simple usage
 
-* The T-Shirt costs 10€ or 8£
+* The T-Shirt costs 10€ and 8£
 
 #### Constructor
 
@@ -73,7 +73,7 @@ $ticketPrice = new Price(
     'EUR' => 100,
     'USD' => 130
   ],
-  ['EUR/GBP 0.7901'] // this is an array of conversions
+  ['EUR/GBP 0.7901'] // this is an array of conversions with the ISO standard format.
 );
 
 echo $ticketPrice->inEUR(); // 100
@@ -103,8 +103,6 @@ API (still not stable)
 ### Price
 
 ```php
-    public function set($currency, $value);
-
     public function inXYZ($currency); // ZYX is a valid currency like EUR or GBP
 
     public function getAmount($currency);
@@ -155,6 +153,19 @@ $sumPrice->inUSD(); //          130
 $sumPrice->inCHF(); //          300
 ```
 
+#### With the \Iterator interface
+
+Implement the `\Iterator` so Price is an array of Money.
+
+``` php
+$price = new Price ....
+foreach ($price as $money) {
+    echo $money->getAmount() . ' in '. $money->getCurrencies();
+}
+```
+
+Note: the iteration is valid only on the explicit currencies not on the converted one.
+
 License [![License](https://poser.pugx.org/leaphly/price/license.png)](https://packagist.org/packages/leaphly/price)
 -------
 
@@ -166,7 +177,7 @@ Test
 ----
 
 ``` bash
-composer.phar create-project leaphly/price dev-master`
+composer.phar create-project leaphly/price ~1`
 bin/phpunit
 ```
 
@@ -179,3 +190,5 @@ Reporting an issue or a feature request
 ---------------------------------------
 
 Issues and feature requests are tracked in the [Github issue tracker](https://github.com/leaphly/price/issues).
+
+Note: this library uses the `dev` version of the [Mathias Verraes Money](https://github.com/mathiasverraes/money/).

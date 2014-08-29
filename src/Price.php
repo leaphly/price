@@ -78,7 +78,7 @@ class Price implements \Iterator
 
     /**
      * Magic call that helps adding money or retrieving amount
-     *  eg. setEUR(10)
+     *  eg. setEUR(10) @deprecated
      *      inEUR()
      *      getEUR() @deprecated
      *
@@ -104,45 +104,6 @@ class Price implements \Iterator
     }
 
     /**
-     * Detect the magic getter and returns the currency ISO string,
-     * returns false otherwise.
-     *
-     * @return String|false
-     */
-    private function isMagicGetter($method)
-    {
-        $currencyToGet = str_replace('get', '', $method, $count);
-
-        return ($count > 0) ? $currencyToGet : false;
-    }
-
-    /**
-     * Detect the magic setter and returns the currency ISO string,
-     * returns false otherwise.
-     *
-     * @return String|false
-     */
-    private function isMagicSetter($method)
-    {
-        $currencyToSet = str_replace('set', '', $method, $count);
-
-        return ($count > 0) ? $currencyToSet : false;
-    }
-
-    /**
-     * Detect the magic in and returns the currency ISO string,
-     * returns false otherwise.
-     *
-     * @return String|false
-     */
-    private function isMagicIn($method)
-    {
-        $currencyToConvertIn = str_replace('in', '', $method, $count);
-
-        return ($count > 0) ? $currencyToConvertIn : false;
-    }
-
-    /**
      * Is 0 if all the currencies has not a positive or negative number.
      *
      * @return bool
@@ -162,6 +123,8 @@ class Price implements \Iterator
 
     /**
      * Set a money in the given currency and amount
+     *
+     * @deprecated use the constructor instead.
      *
      * @param string|Currency $currency eg 'EUR'
      * @param int             $value    eg. 100
@@ -295,6 +258,39 @@ class Price implements \Iterator
     public function divide($divisor)
     {
         return $this->executeMoneyFunction($divisor, __FUNCTION__);
+    }
+
+    /**
+     * Detect the magic getter and returns the currency ISO string,
+     * returns false otherwise.
+     */
+    private function isMagicGetter($method)
+    {
+        $currencyToGet = str_replace('get', '', $method, $count);
+
+        return ($count > 0) ? $currencyToGet : false;
+    }
+
+    /**
+     * Detect the magic setter and returns the currency ISO string,
+     * returns false otherwise.
+     */
+    private function isMagicSetter($method)
+    {
+        $currencyToSet = str_replace('set', '', $method, $count);
+
+        return ($count > 0) ? $currencyToSet : false;
+    }
+
+    /**
+     * Detect the magic in and returns the currency ISO string,
+     * returns false otherwise.
+     */
+    private function isMagicIn($method)
+    {
+        $currencyToConvertIn = str_replace('in', '', $method, $count);
+
+        return ($count > 0) ? $currencyToConvertIn : false;
     }
 
     private function doGetMoney($currency)
