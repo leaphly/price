@@ -355,9 +355,8 @@ class Price implements \Iterator
             $newPriceCurrencies[(string) $currency] = $result->getAmount();
         }
 
-        //$newPriceCurrencies contiene chiavi con currencies
         $conversions = $this->removeConversionWithCounterCurrencyInCurrencies(
-            array_unique(array_merge($this->getConversions(), $other->getConversions())),
+            array_merge($this->getConversions(), $other->getConversions()),
             array_keys($newPriceCurrencies)
         );
 
