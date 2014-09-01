@@ -2,6 +2,9 @@
 
 namespace Leaphly\Price;
 
+use Money\CurrencyPair;
+use Money\Money;
+
 class ConversionPriceTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructor()
@@ -13,6 +16,31 @@ class ConversionPriceTest extends \PHPUnit_Framework_TestCase
                 'GBP' => 15,
             ),
             array('USD/CHF 1.500')
+        );
+
+        $this->assertInstanceOf(
+            'Leaphly\Price\Price',
+            $price
+        );
+
+        $this->assertEquals(15,
+            $price->getAmount('CHF')
+        );
+    }
+
+    public function testConstructorWithMoney()
+    {
+        $price = new Price(
+            [
+                Money::EUR(5),
+                Money::USD(10),
+                Money::GBP(10),
+                'TRY' => 120
+            ],
+            [
+                CurrencyPair::createFromIso('USD/CHF 1.5'),
+                CurrencyPair::createFromIso('USD/AWG 1.0')
+            ]
         );
 
         $this->assertInstanceOf(

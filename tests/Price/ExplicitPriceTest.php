@@ -28,7 +28,7 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
     public function testIsZeroOnEmptyPrice()
     {
-        $price = new Price();
+        $price = new Price(array());
 
         $this->assertTrue($price->isZero());
     }
@@ -113,7 +113,6 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
             -3,
             $price1->getAmount('CHF')
         );
-
 
         $this->assertEquals(
             30,

@@ -43,6 +43,8 @@ echo $tShirtPrice->inGBP(); // 237  same as ->getAmount('GBP')
 - It helps you to work with multiple currencies, converted or explicit.
 - It is shipped with some math operations: `addition`, `multiplication`, `division`, `subtraction` ...
 - This library extends the [mathiasverraes/money](https://packagist.org/packages/mathiasverraes/money).
+- Immutable Value Object.
+- Shipped with an example of `DoctrineType`
 
 ### Simple usage
 
@@ -64,6 +66,7 @@ echo $tShirtPrice->inEUR();  // return 1000
 
 var_dump($ticketPrice->availableCurrencies()); // array with EUR, GBP
 ```
+
 
 #### Usage with mixed explicit and converted values
 
@@ -162,6 +165,26 @@ $price = new Price ....
 foreach ($price as $money) {
     echo $money->getAmount() . ' in '. $money->getCurrencies();
 }
+```
+
+#### Use it with the Money Value Object
+
+
+``` php
+use Money\Money;
+use Money\CurrencyPair;
+
+$price = new Price(
+    array(
+        Money::EUR(5),
+        Money::USD(10),
+        Money::GBP(10),
+        'TRY' => 120  // or mixed
+    ),
+    [
+        CurrencyPair::createFromIso('USD/CHF 1.5'),
+    ]
+);
 ```
 
 Note: the iteration is valid only on the explicit currencies not on the converted one.
