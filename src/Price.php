@@ -31,36 +31,6 @@ class Price implements \Iterator
     }
 
     /**
-     * Add a Conversion Pair into the Price
-     *  eg. 'EUR/USD 1.2500'
-     *
-     * @param string|CurrencyPair $conversion
-     *
-     * @throws \Exception
-     */
-    public function addConversion($conversion)
-    {
-        if (is_string($conversion)) {
-            $conversion = CurrencyPair::createFromIso($conversion);
-        }
-
-        // assert the BaseCurrency exists or is calculable
-        if (!$this->hasAmount($conversion->getBaseCurrency())
-            && !$this->hasConversion($conversion->getBaseCurrency())
-        ) {
-            throw new \Exception(sprintf(
-                'Impossible to find %s, in the array of possible conversion,
-                             be careful the order is important.',
-                $conversion->getBaseCurrency()
-            ));
-        }
-
-        $this->conversions
-        [(string) $conversion->getCounterCurrency()]
-        [(string) $conversion->getBaseCurrency()] = $conversion;
-    }
-
-    /**
      * Get all conversions.
      *
      * @return CurrencyPair[]
@@ -78,8 +48,7 @@ class Price implements \Iterator
 
     /**
      * Magic call that helps adding money or retrieving amount
-     *  eg. setEUR(10) @deprecated
-     *      inEUR()
+     *  eg  inEUR()
      *      getEUR() @deprecated
      *
      * @param $method
@@ -91,10 +60,6 @@ class Price implements \Iterator
      */
     public function __call($method, $args)
     {
-        if (($currency = $this->isMagicSetter($method)) !== false) {
-            return $this->set($currency, $args[0]);
-        }
-
         if (($currency = $this->isMagicGetter($method)) !== false
             || ($currency = $this->isMagicIn($method))  !== false) {
             return $this->getAmount($currency);
@@ -112,31 +77,13 @@ class Price implements \Iterator
     {
         $array = $this->toArray();
 
-        foreach ($array as $currency => $money) {
+        foreach ($array as $money) {
             if (!$money->isZero()) {
                 return false;
             }
         }
 
         return true;
-    }
-
-    /**
-     * Set a money in the given currency and amount
-     *
-     * @deprecated use the constructor instead.
-     *
-     * @param string|Currency $currency eg 'EUR'
-     * @param int             $value    eg. 100
-     *
-     * @return $this
-     */
-    public function set($currency, $value)
-    {
-        $currency = (string) $currency;
-        $this->money[$currency] = new Money($value, new Currency($currency));
-
-        return $this;
     }
 
     /**
@@ -169,7 +116,8 @@ class Price implements \Iterator
      *  if it doesnt' find the currency it tries to convert using conversions.
      *
      * @param $currency
-     * @return null
+     *
+     * @return Money|null
      */
     public function getMoney($currency)
     {
@@ -194,18 +142,6 @@ class Price implements \Iterator
     }
 
     /**
-     * Add another price to the actual, the result is the intersection, the conversions are not modified.
-     *
-     * @param Price $addend
-     *
-     * @return Price
-     */
-    public function add(Price $addend)
-    {
-        return $this->executeMoneyFunctionOnPrice($addend, __FUNCTION__);
-    }
-
-    /**
      * Return true if the this prices has the same amounts, conversions are not compared.
      *
      * @param Price $other
@@ -215,6 +151,10 @@ class Price implements \Iterator
     public function equals(Price $other)
     {
         if ($other->toArray() != $this->toArray()) {
+            return false;
+        }
+
+        if ($other->getConversions() != $this->getConversions()) {
             return false;
         }
 
@@ -261,6 +201,64 @@ class Price implements \Iterator
     }
 
     /**
+     * Add another price to the actual, the result is the intersection, the conversions are not modified.
+     *
+     * @param Price $addend
+     *
+     * @return Price
+     */
+    public function add(Price $addend)
+    {
+        return $this->executeMoneyFunctionOnPrice($addend, __FUNCTION__);
+    }
+
+    /**
+     * Set a money in the given currency and amount
+     */
+    private function set($currency, $value)
+    {
+        $currency = (string) $currency;
+        $this->money[$currency] = new Money($value, new Currency($currency));
+
+        return $this;
+    }
+
+    /**
+     * Add a Conversion Pair into the Price
+     *  eg. 'EUR/USD 1.2500'
+     */
+    private function addConversion($conversion)
+    {
+        if (is_string($conversion)) {
+            $conversion = CurrencyPair::createFromIso($conversion);
+        }
+
+        // assert that the Counter currency doesn't exist as explicit currency
+        if ($this->hasAmount($conversion->getCounterCurrency())) {
+            throw new \InvalidArgumentException(sprintf(
+                'Impossible to add as a counterCurrency %s,
+                a currency that already exist in the explicit currency.',
+                $conversion->getCounterCurrency()
+            ));
+        }
+
+        // assert the BaseCurrency exists or is calculable
+        if (!$this->hasAmount($conversion->getBaseCurrency())
+            && !$this->hasConversion($conversion->getBaseCurrency())
+        ) {
+            throw new \Exception(sprintf(
+                'Impossible to find %s, in the array of possible conversion,
+                be careful the order is important.',
+                $conversion->getBaseCurrency()
+            ));
+        }
+
+        $this->conversions
+        [(string) $conversion->getCounterCurrency()]
+        [(string) $conversion->getBaseCurrency()] = $conversion;
+    }
+
+    /**
      * Detect the magic getter and returns the currency ISO string,
      * returns false otherwise.
      */
@@ -269,17 +267,6 @@ class Price implements \Iterator
         $currencyToGet = str_replace('get', '', $method, $count);
 
         return ($count > 0) ? $currencyToGet : false;
-    }
-
-    /**
-     * Detect the magic setter and returns the currency ISO string,
-     * returns false otherwise.
-     */
-    private function isMagicSetter($method)
-    {
-        $currencyToSet = str_replace('set', '', $method, $count);
-
-        return ($count > 0) ? $currencyToSet : false;
     }
 
     /**
@@ -337,40 +324,56 @@ class Price implements \Iterator
 
     private function executeMoneyFunction($divOrMult, $amountFunction)
     {
-        $newPrice = new Price();
         $array = $this->toArray();
 
+        $currencies = array();
         foreach ($array as $currency => $money) {
             $result = $money->{$amountFunction}($divOrMult);
-            $newPrice->set($result->getCurrency(), $result->getAmount());
+            $currencies[(string) $currency] = $result->getAmount();
         }
 
-        return $newPrice;
+        return new Price($currencies, $this->getConversions());
     }
 
     private function executeMoneyFunctionOnPrice(Price $other, $amountFunction)
     {
-        $newPrice = new Price();
-        $currencies = array_merge($this->availableCurrencies(), $other->availableCurrencies());
+        $newPriceCurrencies = array();
+        $currencies = array_unique(array_merge($this->availableCurrencies(), $other->availableCurrencies()));
 
         foreach ($currencies as $currency) {
             $moneyA = new Money(0, new Currency($currency));
             $moneyB = new Money(0, new Currency($currency));
 
-            if ($this->hasAmount($currency)) {
-                $moneyA = $this->getMoney($currency);
+            if ($moneyTmp = $this->getMoney($currency)) {
+                $moneyA = $moneyTmp;
             }
-            if ($other->hasAmount($currency)) {
-                $moneyB = $other->getMoney($currency);
+            if ($moneyTmp = $other->getMoney($currency)) {
+                $moneyB = $moneyTmp;
             }
 
             $result = $moneyA->{$amountFunction}($moneyB);
-            $newPrice->set($result->getCurrency(), $result->getAmount());
+            $newPriceCurrencies[(string) $currency] = $result->getAmount();
         }
-        $newPrice->addConversions($this->getConversions());
-        $newPrice->addConversions($other->getConversions());
 
-        return $newPrice;
+        //$newPriceCurrencies contiene chiavi con currencies
+        $conversions = $this->removeConversionWithCounterCurrencyInCurrencies(
+            array_unique(array_merge($this->getConversions(), $other->getConversions())),
+            array_keys($newPriceCurrencies)
+        );
+
+        return new Price($newPriceCurrencies, $conversions);
+    }
+
+    private function removeConversionWithCounterCurrencyInCurrencies(array $conversions, array $currencies)
+    {
+        $conversionsFiltered = array();
+        foreach ($conversions as $conversion) {
+            if (!in_array((string) $conversion->getCounterCurrency(), $currencies)) {
+                $conversionsFiltered[] = $conversion;
+            }
+        }
+
+        return $conversionsFiltered;
     }
 
     public function toArray()

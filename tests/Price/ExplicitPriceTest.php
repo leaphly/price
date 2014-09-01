@@ -46,10 +46,9 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($price->isZero());
     }
 
-    public function testMagicCallSetAndGet()
+    public function testMagicCallGet()
     {
-        $price = new Price();
-        $price->setEUR(20);
+        $price = new Price(['EUR'=>20]);
 
         $this->assertInstanceOf(
             'Leaphly\Price\Price',
@@ -59,23 +58,9 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($price->getAmount('EUR'), $price->inEUR(20));
     }
 
-
-
-    public function testSetEur()
-    {
-        $price = new Price();
-        $price->set('EUR', 20);
-
-        $this->assertInstanceOf(
-            'Leaphly\Price\Price',
-            $price
-        );
-    }
-
     public function testGetAmount()
     {
-        $price = new Price();
-        $price->set('EUR', 20);
+        $price = new Price(['EUR'=>20]);
 
         $this->assertEquals(20,
             $price->getAmount('EUR')
@@ -84,25 +69,22 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
     public function testAddPrices()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 20);
+        $price1 = new Price(['EUR'=>20]);
 
-        $price2 = new Price();
-        $price2->set('EUR', 10);
+        $price2 = new Price(['EUR'=>10]);
 
+        $money = $price1->add($price2);
         $this->assertEquals(30,
-            $price1->add($price2)->getAmount('EUR')
+            $money->getAmount('EUR')
         );
     }
 
 
     public function testEquals()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 10);
+        $price1 = new Price(['EUR'=>10]);
 
-        $price2 = new Price();
-        $price2->set('EUR', 10);
+        $price2 = new Price(['EUR'=>10]);
 
         $this->assertTrue(
             $price1->equals($price2)
@@ -111,15 +93,9 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
     public function testAddDisjoined()
     {
-        $price1 = new Price();
-        $price1->set('USD', 10);
-        $price1->set('EUR', 20);
-        $price1->set('GBP', 30);
+        $price1 = new Price(['EUR'=>20, 'USD'=>10, 'GBP'=>30]);
 
-        $price2 = new Price();
-        $price2->set('USD', 1);
-        $price2->set('EUR', 2);
-        $price2->set('CHF', 3);
+        $price2 = new Price(['EUR'=>2, 'USD'=>1, 'CHF'=>3]);
 
         $price1 = $price1->subtract($price2);
 
@@ -145,52 +121,41 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-
     public function testAdd()
     {
-        $price1 = new Price();
-        $price1->set('USD', 10);
-        $price1->set('EUR', 20);
-        $price1->set('GBP', 30);
+        $price1 = new Price(['EUR'=>20, 'USD'=>10, 'GBP'=>30]);
 
-        $price2 = new Price();
-        $price2->set('USD', 1);
-        $price2->set('EUR', 2);
-        $price2->set('CHF', 3);
+        $price2 = new Price(['EUR'=>2, 'USD'=>1, 'CHF'=>3]);
 
-        $price1 = $price1->add($price2);
+        $price = $price1->add($price2);
 
         $this->assertEquals(
             22,
-            $price1->getAmount('EUR')
+            $price->getAmount('EUR')
         );
 
         $this->assertEquals(
             11,
-            $price1->getAmount('USD')
+            $price->getAmount('USD')
         );
 
         $this->assertEquals(
             3,
-            $price1->getAmount('CHF')
+            $price->getAmount('CHF')
         );
 
 
         $this->assertEquals(
             30,
-            $price1->getAmount('GBP')
+            $price->getAmount('GBP')
         );
     }
 
     public function testEqualsOnDifferent()
     {
-        $price1 = new Price();
-        $price1->set('GBP', 1);
-        $price1->set('USD', 10);
+        $price1 = new Price(['GBP'=>1, 'USD'=>10]);
 
-        $price2 = new Price();
-        $price2->set('USD', 1);
-        $price2->set('EUR', 10);
+        $price2 = new Price(['GBP'=>1, 'EUR'=>10]);
 
         $this->assertFalse(
             $price1->equals($price2)
@@ -199,11 +164,9 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
     public function testSubtractPricesNegative()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 20);
+        $price1 = new Price(['EUR'=>20]);
 
-        $price2 = new Price();
-        $price2->set('EUR', 10);
+        $price2 = new Price(['EUR'=>10]);
 
         $this->assertEquals(10,
             $price1->subtract($price2)->getAmount('EUR')
@@ -212,36 +175,30 @@ class ExplicitPriceTest extends \PHPUnit_Framework_TestCase
 
     public function testSubtractPrices()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 10);
+        $price1 = new Price(['EUR'=>20]);
 
-        $price2 = new Price();
-        $price2->set('EUR', 20);
+        $price2 = new Price(['EUR'=>10]);
 
-        $this->assertEquals(-10,
+        $this->assertEquals(10,
             $price1->subtract($price2)->getAmount('EUR')
         );
     }
 
     public function testDividePrices()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 10);
-        $price1->set('USD', 20);
+        $price = new Price(['EUR'=>20, 'USD'=>20]);
 
         $this->assertEquals(10,
-            $price1->divide(2)->getAmount('USD')
+            $price->divide(2)->getAmount('USD')
         );
     }
 
     public function testMultiplyPrices()
     {
-        $price1 = new Price();
-        $price1->set('EUR', 10);
-        $price1->set('USD', 20);
+        $price = new Price(['EUR'=>10, 'USD'=>10]);
 
         $this->assertEquals(20,
-            $price1->multiply(2)->getAmount('EUR')
+            $price->multiply(2)->getAmount('EUR')
         );
     }
 
