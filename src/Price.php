@@ -15,16 +15,14 @@ class Price implements \Iterator
     /**
      * Construct a Price from money and conversions
      */
-    public function __construct(array $money = null, array $conversions = null)
+    public function __construct(array $money, array $conversions = null)
     {
-        if ((null == $money || count($money) <= 0) && null != $conversions) {
+        if ((count($money) <= 0) && null != $conversions) {
             throw new \InvalidArgumentException('Conversion should be null if no money are given.');
         }
-
         if (null !== $money) {
             $this->fromArray($money);
         }
-
         if (null !== $conversions) {
             $this->addConversions($conversions);
         }
