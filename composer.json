@@ -8,7 +8,7 @@
         }
     ],
     "require": {
-        "mathiasverraes/money": "dev-master"
+        "mathiasverraes/money": "1.3.x-dev"
     },
     "require-dev": {
         "phpunit/phpunit": "~4",
