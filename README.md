@@ -62,7 +62,7 @@ $ticketPrice = new Price(
   ]
 );
 
-echo $tShirtPrice->inEUR();  // return 1000
+echo $ticketPrice->inEUR();  // return 1000
 
 var_dump($ticketPrice->availableCurrencies()); // array with EUR, GBP
 ```
