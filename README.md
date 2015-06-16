@@ -93,9 +93,9 @@ var_dump($ticketPrice->availableCurrencies()); // array with EUR, USD, GBP
 
 `here` and `take away` are contexts (*still is a missing feature*).
 
-`2€` `2.3£` is a Price with 2 currencies,
+`2€` `2.3$` is a Price with 2 currencies,
 
-`1€` `1.2£` is a Price with 2 currencies,
+`1€` `1.2$` is a Price with 2 currencies,
 
 `2€ or 2.3$ here, and 1€ or 1.2$ for take away.` is a PriceList (*still is a missing feature*).
 
